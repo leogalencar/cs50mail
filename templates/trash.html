@@ -1,0 +1,56 @@
+{% extends "index.html" %}
+
+{% block title %}CS50 Mail - Trash{% endblock %}
+
+{% block top_menu_delete_button %}
+    <button class="btn btn-icon border-0 rounded-5" id="button-delete-selected" type="button" data-bs-toggle="modal" data-bs-target="#deleteEmailModal" hidden>
+        <img src="/static/svg/delete.svg" alt="Delete icon" width="24">
+    </button>
+{% endblock %}
+
+{% block tbody %}
+    {{ super() }}
+
+    <!-- Confirm Deletion Modal -->
+    <div class="modal fade" id="deleteEmailModal" tabindex="-1" aria-labelledby="deleteEmailModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="deleteEmailModalLabel">Delete email?</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    This action can not be undone.
+                </div>
+                <div class="modal-footer">
+                    <form id="top-menu-form">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-danger" id="button-delete-modal" formmethod="post">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    
+    <script>
+        button_delete = document.getElementById("button-delete-modal");
+
+        document.getElementById("button-delete-selected").addEventListener("click", () => {
+            button_delete.setAttribute("formaction", "/delete/list/selected");
+            button_delete.setAttribute("form", "top-menu-form");
+        });
+
+        document.querySelectorAll("td > form > div > button").forEach(button => {
+            button.addEventListener("click", () => {
+                var path = "/delete/" + button.id.split("-")[0] + "/" + button.id.split("-")[1];
+
+                button_delete.setAttribute("formaction", path);
+            });
+        });
+    </script>
+{% endblock %}

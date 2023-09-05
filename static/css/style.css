@@ -1,0 +1,134 @@
+table {
+    cursor: pointer;
+}
+
+.bi {
+    width: 24px !important;
+    height: 24px !important;
+
+    flex-shrink: 0;
+    fill: currentcolor !important;
+    transition: 0.2s ease-in-out transform;
+}
+
+.btn-icon {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+}
+
+.btn-icon:hover {
+    background-color: rgb(233, 233, 233);
+}
+
+.btn-icon > a {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-icon > img {
+    display: flex;
+    margin: auto;
+}
+
+.active-none {
+    border: 0;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.list-item {
+    padding: 0.8rem 0.75rem;
+    border-radius: 50px;
+}
+
+.list-item:hover {
+    background-color: rgb(233, 233, 233);
+}
+
+.list-item-active,
+.list-item-active:hover {
+    background-color: aliceblue;
+}
+
+.searchGroup {
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.searchGroup:focus-within {
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    background-color: aliceblue !important;
+}
+
+.searchInput {
+    border: none;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.searchInput:focus {
+    box-shadow: none;
+    background-color: aliceblue !important;
+}
+
+.truncate {
+    white-space: nowrap;
+    text-overflow:ellipsis;
+    overflow: hidden;
+    max-width:1px;
+}
+
+.email-delete-button {
+    display: none;
+}
+
+tr:hover > .email-delete-button {
+    display: table-cell;
+}
+
+tr:hover > .email-date {
+    display: none;
+}
+
+.vertical-nav {
+    transition: 0.2s ease-in-out;
+}
+
+.nav-hidden {
+    width: 72px;
+}
+
+.nav-hidden span {
+    display: none;
+    transition: 0.1s ease-in-out;
+}
+
+.nav-hidden #div-progress-bar {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.1s;
+}
+
+#div-progress-bar {
+    opacity: 1;
+    transition: opacity 3s;
+}
+
+.table-scroll {
+    min-height: 726px;
+}
+
+@media screen and (width >= 992px) {
+    .table-scroll {
+        overflow-y: auto;
+        height: 726px;
+    }
+
+    .position-lg-absolute {
+        position: absolute !important;
+    }
+}

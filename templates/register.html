@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block main %}
+    <div class="row justify-content-center">
+        <div class="col-11 col-lg-5 bg-white rounded p-4">
+            <div class="display-5 text-center">
+                Register
+            </div>
+            
+            <form action="/register" method="POST">
+                <div class="row mt-5">
+                    <div class="col-md-6 mb-3">
+                        <label for="firstNameInput" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="firstNameInput" name="firstNameInput">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="lastNameInput" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="lastNameInput" name="lastNameInput">
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="emailInput" class="form-label">Email address</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="emailInput" name="emailInput">
+                            <span class="input-group-text" id="emailSuffix">@cs50mail.com</span>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="passwordInput" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="passwordInput" name="passwordInput">
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="confirmPasswordInput" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirmPasswordInput" name="confirmPasswordInput">
+                    </div>
+                    <div class="col-12 text-center mt-4">
+                        <button class="btn btn-primary" type="submit">Register</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

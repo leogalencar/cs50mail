@@ -1,0 +1,120 @@
+{% extends "index.html" %}
+
+{% block title %}CS50 Mail - Search{% endblock %}
+
+{% block tbody %}
+    {% for email in emails %}
+        <tr>
+            <td class="text-center">
+                <label class="btn active-none" for="checkbox-{{ email.id }}">
+                    <input class="form-check-input pointer checkbox-table" type="checkbox" name="checkbox-email" id="checkbox-{{ email.id }}" form="top-menu-form" value="{{ email.type }}-{{ email.id }}">
+                </label>
+            </td>
+            <td>
+                <form action="/star/{{ email.type }}/{{ email.id }}" method="POST">
+                    <button class="btn btn-icon border-0 rounded-5" id="button-star" type="submit">
+                        {% if not email.favorite %}
+                            <img src="/static/svg/star.svg" alt="Star icon" width="24">
+                        {% else %}
+                            <img src="/static/svg/star_fill.svg" alt="Star icon" width="24">
+                        {% endif %}
+                    </button>
+                </form>
+            </td>
+            <td onclick="redirect('/{{ active_page }}/{{ email.id }}')">
+                {% if email.type == 'sent' %}
+                    To
+                    {% if email.email == keyword.upper() %}
+                        <mark>{{ email.email }}</mark>
+                    {% else %}
+                        {{ email.email }}
+                    {% endif %}
+
+                {% else %}
+                    <!-- <strong> -->
+                        {% if email.first_name.upper() == keyword.upper() %}
+                            <mark>{{ email.first_name }}</mark>
+                        {% else %}
+                            {{ email.first_name }}
+                        {% endif %}
+
+                        {% if email.last_name.upper() == keyword.upper() %}
+                            <mark>{{ email.last_name }}</mark>
+                        {% else %}
+                            {{ email.last_name }}
+                        {% endif %}
+                    <!-- </strong> -->
+                {% endif %}
+            </td>
+            <td class="truncate" onclick="redirect('/{{ active_page }}/{{ email.id }}')">
+                <span>
+                    <!-- <strong> -->
+                        {% for word in '{}'.format(email.subject).split() %}
+                            {% if word.upper() == keyword.upper() %}
+                                <mark>{{ word }}</mark>
+                            {% else %}
+                                {{ word }}
+                            {% endif %}
+                        {% endfor %}
+                    <!-- </strong> -->
+                    - {{ email.content }}
+                </span>
+            </td>
+            <td class="email-date text-end" onclick="redirect('/{{ active_page }}/{{ email.id }}')">{{ email.date }}</td>
+            <td class="email-delete-button">
+                <form class="d-flex">
+                    <div class="rounded-5 mx-auto d-flex">
+                        {% if email.category == 'TRASH' %}
+                            <button class="btn btn-icon border-0 rounded-5" id="button-restore" type="submit" formaction="/restore/{{ email.type }}/{{ email.id }}" formmethod="post">
+                                <img src="../static/svg/restore.svg" alt="Restore icon" width="24">
+                            </button>
+                            <button class="btn btn-icon border-0 rounded-5" id="{{ email.type }}-{{ email.id }}" type="button" data-bs-toggle="modal" data-bs-target="#deleteEmailModal">
+                                <img src="../static/svg/delete.svg" alt="Delete icon" width="24">
+                            </button>
+                        {% else %}
+                            <button class="btn btn-icon border-0 rounded-5" id="button-delete" type="submit" formaction="/delete/{{ email.type }}/{{ email.id }}" formmethod="post">
+                                <img src="/static/svg/delete.svg" alt="Delete icon" width="24">
+                            </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+
+    <!-- Confirm Deletion Modal -->
+    <div class="modal fade" id="deleteEmailModal" tabindex="-1" aria-labelledby="deleteEmailModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="deleteEmailModalLabel">Delete email?</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    This action can not be undone.
+                </div>
+                <div class="modal-footer">
+                    <form>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-danger" id="button-delete-modal" formmethod="post">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    
+    <script>
+        document.querySelectorAll("td > form > div > button").forEach(button => {
+            button.addEventListener("click", () => {
+                var path = "/delete/" + button.id.split("-")[0] + "/" + button.id.split("-")[1]
+
+                document.getElementById("button-delete-modal").setAttribute("formaction", path)
+            });
+        });
+    </script>
+{% endblock %}

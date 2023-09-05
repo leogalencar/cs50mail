@@ -1,0 +1,178 @@
+{% extends "layout.html" %}
+
+{% block title %}CS50 Mail - Inbox{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    {{ ckeditor.load() }}
+{% endblock %}
+
+{% block content %}
+    <!-- Menu -->
+    <div class="row">
+        <div class="col">
+            <form class="d-flex" id="top-menu-form">
+                <div class="rounded-5 me-auto">
+                    <button class="btn btn-icon border-0 rounded-5" id="button-refresh" type="submit">
+                        <img src="/static/svg/refresh.svg" alt="Refresh icon" width="24">
+                    </button>
+                    {% block top_menu_delete_button %}
+                        <button class="btn btn-icon border-0 rounded-5" id="button-delete-selected" type="submit" formaction="/delete/list/selected" formmethod="POST" hidden>
+                            <img src="/static/svg/delete.svg" alt="Delete icon" width="24">
+                        </button>
+                    {% endblock %}
+                </div>
+                <div class="rounded-5 justify-content-end align-items-center d-flex">
+                    <span>{{ start }}-{{ end }} of {{ pagination.total }}</span>
+                    {% if pagination.page == 1 %}
+                        <button class="btn btn-icon border-0 rounded-5 ms-2" id="button-back" type="button" disabled>
+                            <img src="/static/svg/arrow_back.svg" alt="Refresh icon" width="24">
+                        </button>
+                    {% else %}
+                        <button class="btn btn-icon border-0 rounded-5 ms-2" id="button-back" type="button">
+                            <a href="{% if active_page != '' %}/{% endif %}{{ active_page }}/?page={{ pagination.page - 1 }}">
+                                <img src="/static/svg/arrow_back.svg" alt="Refresh icon" width="24">
+                            </a>
+                        </button>
+                    {% endif %}
+
+                    {% if pagination.page * pagination.per_page >= pagination.total %}
+                        <button class="btn btn-icon border-0 rounded-5" id="button-back" type="button" disabled>
+                            <img src="/static/svg/arrow_forward.svg" alt="Refresh icon" width="24">
+                        </button>
+                    {% else %}
+                        <button class="btn btn-icon border-0 rounded-5" id="button-back" type="button">
+                            <a href="{% if active_page != '' %}/{% endif %}{{ active_page }}/?page={{ pagination.page + 1 }}">
+                                <img src="/static/svg/arrow_forward.svg" alt="Refresh icon" width="24">
+                            </a>
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Emails table -->
+    <div class="row mt-4">
+        <div class="col table-responsive table-scroll" data-bs-spy="scroll" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" tabindex="0">
+            <table class="table table-hover align-middle w-100 small">
+                <colgroup>
+                    <col width="3%" />
+                    <col width="1%" />
+                    <col width="8%" />
+                    <col width="83%" />
+                    <col width="5%" />
+                </colgroup>
+                <tbody>
+                    {% if not emails %}
+                            <div class="display-6 text-center">Nothing here!</div>
+                    {% else %}
+                        {% block tbody %}
+                            {% for email in emails %}
+                                <tr>
+                                    <td class="text-center">
+                                        <label class="btn active-none" for="checkbox-{{ email.id }}">
+                                            <input class="form-check-input pointer checkbox-table" type="checkbox" name="checkbox-email" id="checkbox-{{ email.id }}" form="top-menu-form" value="{{ email.type }}-{{ email.id }}">
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <form action="/star/{% if active_page != 'inbox' and active_page != 'sent' %}{{ email.type }}/{% endif %}{{ email.id }}" method="POST">
+                                            <button class="btn btn-icon border-0 rounded-5" id="button-star" type="submit">
+                                                {% if not email.favorite %}
+                                                    <img src="/static/svg/star.svg" alt="Star icon" width="24">
+                                                {% else %}
+                                                    <img src="/static/svg/star_fill.svg" alt="Star icon" width="24">
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td onclick="redirect('/{{ active_page }}/{{ email.id }}')">
+                                        {% if email.type == 'received' %}
+                                            {{ email.first_name }} {{ email.last_name }}
+                                        {% else %}
+                                            To {{ email.email }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="truncate" onclick="redirect('/{{ active_page }}/{{ email.id }}')">
+                                        <span>
+                                            {{ email.subject }} - {{ email.content }}
+                                        </span>
+                                    </td>
+                                    <td class="email-date text-end" onclick="redirect('/{{ active_page }}/{{ email.id }}')">{{ email.date }}</td>
+                                    <td class="email-delete-button">
+                                        {% if active_page == 'trash' %}
+                                            <form class="d-flex">
+                                                <div class="rounded-5 mx-auto d-flex">
+                                                    <button class="btn btn-icon border-0 rounded-5" id="button-restore" type="submit" formaction="/restore/{{ email.type }}/{{ email.id }}" formmethod="post">
+                                                        <img src="../static/svg/restore.svg" alt="Restore icon" width="24">
+                                                    </button>
+                                                    <button class="btn btn-icon border-0 rounded-5" id="{{ email.type }}-{{ email.id }}" type="button" data-bs-toggle="modal" data-bs-target="#deleteEmailModal">
+                                                        <img src="../static/svg/delete.svg" alt="Delete icon" width="24">
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        {% else %}
+                                            <form class="d-flex">
+                                                <div class="rounded-5 mx-auto">
+                                                    <button class="btn btn-icon border-0 rounded-5" id="button-delete" type="submit" formaction="/delete/{{ email.id }}" formmethod="post">
+                                                        <img src="/static/svg/delete.svg" alt="Delete icon" width="24">
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endblock %}
+                    {% endif %}
+                </tbody>
+                <form action="/email" id="email" method="GET"></form>
+            </table>
+        </div>
+    </div>
+
+    <!-- Create email button (floating button) -->
+    <div class="position-fixed position-lg-absolute" style="bottom: 20px; right: 20px; width: 60px; height: 60px;">
+        <button class="btn btn-primary rounded-circle w-100 h-100" type="button" data-bs-toggle="modal" data-bs-target="#newEmailModal">
+            <img src="/static/svg/add.svg" alt="Add icon" width="30">
+        </button>
+    </div>
+
+    <!-- New email modal -->
+    <div class="modal fade" id="newEmailModal" tabindex="-1" aria-labelledby="newEmailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="newEmailModalLabel">New message</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/sendEmail" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="recipient" class="col-form-label">Recipient:</label>
+                            <input type="email" class="form-control" id="recipient" name="recipient">
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject" class="col-form-label">Subject:</label>
+                            <input type="text" class="form-control" id="subject" name="subject">
+                        </div>
+                        <div class="mb-3">
+                            <label for="message-text" class="col-form-label">Message:</label>
+                            <!-- <textarea class="form-control" id="message-text" rows="20" name="message-text"></textarea> -->
+                            {{ ckeditor.create() }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="message-text" class="col-form-label">Files:</label>
+                            <input type="file" class="form-control" id="file" name="file" multiple>
+                        </div>
+                        <div class="modal-footer">
+                            <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> -->
+                            <button type="submit" class="btn btn-primary">Send</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
