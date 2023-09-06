@@ -6,3 +6,5 @@ This application was made using:
 * Flask and Python for managing the backend purposes;
 * SQLite for communication with databases;
 * HTML, CSS, and JavaScript for customizing the user experience in the frontend.
+
+Web app link: https://mrdelta.pythonanywhere.com/
