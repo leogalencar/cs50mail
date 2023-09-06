@@ -74,8 +74,9 @@ def delete_email(type, email_id, db):
         
     # To delete the email permanently
     else:
-        # Add file size to user free space
-        db.execute(f"UPDATE users SET free_space = (free_space + (SELECT SUM(size) FROM files WHERE email_id = ?)) WHERE id = ?", email_id, session["user_id"])
+        # Add file size to user free space if the email has a file
+        if db.execute("SELECT SUM(size) FROM files WHERE email_id = ?", email_id)[0]["SUM(size)"]:
+            db.execute(f"UPDATE users SET free_space = (free_space + (SELECT SUM(size) FROM files WHERE email_id = ?)) WHERE id = ?", email_id, session["user_id"])
         
         # Delete email view
         db.execute(f"DELETE FROM emails_{type} WHERE email_id = ?", email_id)
