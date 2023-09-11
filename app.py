@@ -34,6 +34,12 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
+# Configure CS50 Library to use SQLite database
+db = SQL("sqlite:///mail.db")
+
+# Configure SQLite database to show logs
+logging.getLogger("cs50").disabled = False
+
 # Configure app default folder
 THIS_FOLDER = Path(__file__).parent.resolve()
 
@@ -45,12 +51,6 @@ if app_host == "server":
     DEFAULT_URL = "https://mrdelta.pythonanywhere.com"   # Web URL (pythonanywhere)
 else:
     DEFAULT_URL = "http://127.0.0.1:5000"                # Local URL
-
-# Configure CS50 Library to use SQLite database
-db = SQL(f"sqlite:///{THIS_FOLDER}/mail.db")
-
-# Configure SQLite database to show logs
-logging.getLogger("cs50").disabled = False
 
 
 @app.after_request
