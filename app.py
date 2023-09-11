@@ -567,6 +567,9 @@ def sendEmail():
                     # Reduce receiver free space
                     db.execute("UPDATE users SET free_space = (free_space - ?) WHERE id = ?", size, receiver_id)
                     
+                    # Redefine file path for saving in the database
+                    path = os.path.join(f'files/{session["user_id"]}', filename)
+                    
                     # Save file data on the database
                     db.execute("INSERT INTO files (email_id, name, path, type, size) VALUES (?, ?, ?, ?, ?)", email_id, filename, path, file_type, size)
         else:
