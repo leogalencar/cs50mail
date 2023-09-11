@@ -98,7 +98,7 @@ def expandEmail(email_id, active_page, db):
     # Get email data
     sender = db.execute("SELECT id, first_name, last_name, email FROM users WHERE id = (SELECT sender_id FROM emails WHERE emails.id = ?)", email_id)[0]
     receiver = db.execute("SELECT id, first_name, last_name, email FROM users WHERE id = (SELECT receiver_id FROM emails WHERE emails.id = ?)", email_id)[0]
-    attachments = db.execute("SELECT id, SUBSTR(name, 38) AS name, path, type, size FROM files WHERE email_id = ?", email_id)
+    attachments = db.execute("SELECT id, SUBSTR(name, 38) AS name, SUBSTR(path, INSTR(path, 'files')) AS path, type, size FROM files WHERE email_id = ?", email_id)
     
     # Determine the email type
     type = "received" if receiver["id"] == session["user_id"] else "sent"

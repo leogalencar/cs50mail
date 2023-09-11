@@ -7,6 +7,7 @@ from datetime import datetime
 from flask import Flask, flash, jsonify, redirect, render_template, request, send_file, session
 from flask_ckeditor import CKEditor
 from flask_session import Session
+from pathlib import Path
 from tempfile import mkdtemp
 from uuid import uuid4
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -38,6 +39,18 @@ db = SQL("sqlite:///mail.db")
 
 # Configure SQLite database to show logs
 logging.getLogger("cs50").disabled = False
+
+# Configure app default folder
+THIS_FOLDER = Path(__file__).parent.resolve()
+
+# Define app host
+app_host = "server" if str(THIS_FOLDER)[0] == '/' else "local"
+
+# Configure app URL
+if app_host == "server":
+    DEFAULT_URL = "https://mrdelta.pythonanywhere.com"   # Web URL (pythonanywhere)
+else:
+    DEFAULT_URL = "http://127.0.0.1:5000"                # Local URL
 
 
 @app.after_request
@@ -118,36 +131,36 @@ def delete(email_id=None, type=None, items=None):
         # Set allowed URLs
         ALLOWED_URLS = {
             "inbox": [
-                "http://127.0.0.1:5000/",
-                f"http://127.0.0.1:5000/?page={page}",
-                f"http://127.0.0.1:5000/{email_id}",
-                "http://127.0.0.1:5000/inbox",
-                "http://127.0.0.1:5000/inbox/",
-                f"http://127.0.0.1:5000/inbox?page={page}",
-                f"http://127.0.0.1:5000/inbox/{email_id}"
+                f"{DEFAULT_URL}/",
+                f"{DEFAULT_URL}/?page={page}",
+                f"{DEFAULT_URL}/{email_id}",
+                f"{DEFAULT_URL}/inbox",
+                f"{DEFAULT_URL}/inbox/",
+                f"{DEFAULT_URL}/inbox?page={page}",
+                f"{DEFAULT_URL}/inbox/{email_id}"
             ],
             "sent": [
-                "http://127.0.0.1:5000/sent",
-                "http://127.0.0.1:5000/sent/",
-                f"http://127.0.0.1:5000/sent/?page={page}",
-                f"http://127.0.0.1:5000/sent/{email_id}"
+                f"{DEFAULT_URL}/sent",
+                f"{DEFAULT_URL}/sent/",
+                f"{DEFAULT_URL}/sent/?page={page}",
+                f"{DEFAULT_URL}/sent/{email_id}"
             ],
             "favorites": [
-                "http://127.0.0.1:5000/favorites",
-                "http://127.0.0.1:5000/favorites/",
-                f"http://127.0.0.1:5000/favorites/?page={page}",
-                f"http://127.0.0.1:5000/favorites/{email_id}"
+                f"{DEFAULT_URL}/favorites",
+                f"{DEFAULT_URL}/favorites/",
+                f"{DEFAULT_URL}/favorites/?page={page}",
+                f"{DEFAULT_URL}/favorites/{email_id}"
             ],
             "trash": [
-                "http://127.0.0.1:5000/trash",
-                f"http://127.0.0.1:5000/trash/?page={page}",
-                f"http://127.0.0.1:5000/trash/{email_id}"
+                f"{DEFAULT_URL}/trash",
+                f"{DEFAULT_URL}/trash/?page={page}",
+                f"{DEFAULT_URL}/trash/{email_id}"
             ],
             "search": [
-                f"http://127.0.0.1:5000/search/",
-                f"http://127.0.0.1:5000/search/{type}/",
-                f"http://127.0.0.1:5000/search/?page={page}",
-                f"http://127.0.0.1:5000/search/{email_id}"
+                f"{DEFAULT_URL}/search/",
+                f"{DEFAULT_URL}/search/{type}/",
+                f"{DEFAULT_URL}/search/?page={page}",
+                f"{DEFAULT_URL}/search/{email_id}"
             ]
         }
         
@@ -184,7 +197,7 @@ def delete(email_id=None, type=None, items=None):
             return redirect(f"/sent/?page={page}") if page else redirect("/sent")
         
         # User sent a request from search
-        if "http://127.0.0.1:5000/search/" in http_referer:
+        if f"{DEFAULT_URL}/search/" in http_referer:
             
             # If multiple emails were selected
             if items:
@@ -521,9 +534,9 @@ def sendEmail():
             db.execute("INSERT INTO emails_received (email_id, category, favorite) VALUES (?, ?, ?)", email_id, "INBOX", 0)
             
             # Configure upload folder for files
-            if not os.path.exists(f'files/{session["user_id"]}'):
-                os.makedirs(f'files/{session["user_id"]}')
-            app.config["UPLOAD_FOLDER"] = f'files/{session["user_id"]}'
+            if not os.path.exists(THIS_FOLDER / f'files/{session["user_id"]}'):
+                os.makedirs(THIS_FOLDER / f'files/{session["user_id"]}')
+            app.config["UPLOAD_FOLDER"] = THIS_FOLDER / f'files/{session["user_id"]}'
             
             # Handle files
             for file in files:
@@ -672,31 +685,31 @@ def star(email_id, type=None):
         # Set allowed URLs
         ALLOWED_URLS = {
             "inbox": [
-                "http://127.0.0.1:5000/",
-                f"http://127.0.0.1:5000/?page={page}",
-                f"http://127.0.0.1:5000/{email_id}",
-                "http://127.0.0.1:5000/inbox",
-                "http://127.0.0.1:5000/inbox/",
-                f"http://127.0.0.1:5000/inbox?page={page}",
-                f"http://127.0.0.1:5000/inbox/{email_id}"
+                f"{DEFAULT_URL}/",
+                f"{DEFAULT_URL}/?page={page}",
+                f"{DEFAULT_URL}/{email_id}",
+                f"{DEFAULT_URL}/inbox",
+                f"{DEFAULT_URL}/inbox/",
+                f"{DEFAULT_URL}/inbox?page={page}",
+                f"{DEFAULT_URL}/inbox/{email_id}"
             ],
             "sent": [
-                "http://127.0.0.1:5000/sent",
-                "http://127.0.0.1:5000/sent/",
-                f"http://127.0.0.1:5000/sent/?page={page}",
-                f"http://127.0.0.1:5000/sent/{email_id}"
+                f"{DEFAULT_URL}/sent",
+                f"{DEFAULT_URL}/sent/",
+                f"{DEFAULT_URL}/sent/?page={page}",
+                f"{DEFAULT_URL}/sent/{email_id}"
             ],
             "favorites": [
-                "http://127.0.0.1:5000/favorites",
-                "http://127.0.0.1:5000/favorites/",
-                f"http://127.0.0.1:5000/favorites/?page={page}",
-                f"http://127.0.0.1:5000/favorites/{email_id}"
+                f"{DEFAULT_URL}/favorites",
+                f"{DEFAULT_URL}/favorites/",
+                f"{DEFAULT_URL}/favorites/?page={page}",
+                f"{DEFAULT_URL}/favorites/{email_id}"
             ],
             "search": [
-                f"http://127.0.0.1:5000/search/",
-                f"http://127.0.0.1:5000/search/{type}/",
-                f"http://127.0.0.1:5000/search/?page={page}",
-                f"http://127.0.0.1:5000/search/{email_id}"
+                f"{DEFAULT_URL}/search/",
+                f"{DEFAULT_URL}/search/{type}/",
+                f"{DEFAULT_URL}/search/?page={page}",
+                f"{DEFAULT_URL}/search/{email_id}"
             ]
         }
         
