@@ -61,7 +61,7 @@ def after_request(response):
     response.headers["Pragma"] = "no-cache"
     return response
 
-# TODO : Sync other pages to receive user space info
+
 @app.route("/")
 @app.route("/inbox")
 @app.route("/inbox/")
