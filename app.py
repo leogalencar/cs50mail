@@ -664,7 +664,15 @@ def settings():
     
     # User reached route via GET (as clicking by link or via redirect)
     else:
-        return render_template("settings.html", active_page='settings')
+        
+        # Get user free space
+        user_space = {}
+        
+        user_space["free"] = db.execute("SELECT free_space FROM users WHERE id = ?", session["user_id"])[0]["free_space"]
+        user_space["used"] = (1024**3) - user_space["free"]
+        user_space["used_percent"] = user_space["used"] * 100 / (1024**3)
+        
+        return render_template("settings.html", active_page='settings', user_space=user_space)
 
 
 @app.route("/star/<email_id>", methods=["POST"])
