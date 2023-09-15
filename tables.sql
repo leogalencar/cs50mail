@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
     last_name TEXT NOT NULL,
     email TEXT NOT NULL,
     password TEXT NOT NULL,
+    profile_pic_path TEXT DEFAULT '/static/img/profilepic.png',
     -- 1 GB (1024 MB)
     free_space REAL NOT NULL DEFAULT (1024 * 1024 * 1024)
 );

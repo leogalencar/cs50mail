@@ -16,10 +16,13 @@ from functools import wraps
 
 
 
-def allowed_file(filename):
+def allowed_file(filename, type=None):
     """Verify if a filename has an allowed extension"""
     
-    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'csv', 'rar'}
+    if type == "image":
+        ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
+    else:
+        ALLOWED_EXTENSIONS = {'csv', 'gif', 'jpg', 'jpeg', 'pdf', 'png', 'rar', 'txt'}
     
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -96,7 +99,7 @@ def expandEmail(email_id, active_page, db):
     """Expand selected email"""
     
     # Get email data
-    sender = db.execute("SELECT id, first_name, last_name, email FROM users WHERE id = (SELECT sender_id FROM emails WHERE emails.id = ?)", email_id)[0]
+    sender = db.execute("SELECT id, first_name, last_name, email, profile_pic_path FROM users WHERE id = (SELECT sender_id FROM emails WHERE emails.id = ?)", email_id)[0]
     receiver = db.execute("SELECT id, first_name, last_name, email FROM users WHERE id = (SELECT receiver_id FROM emails WHERE emails.id = ?)", email_id)[0]
     attachments = db.execute("SELECT id, SUBSTR(name, 38) AS name, path, type, size FROM files WHERE email_id = ?", email_id)
     
@@ -114,15 +117,11 @@ def expandEmail(email_id, active_page, db):
     else:
         page = ''
     
-    # Get user free space
-    user_space = {}
-    
-    user_space["free"] = db.execute("SELECT free_space FROM users WHERE id = ?", session["user_id"])[0]["free_space"]
-    user_space["used"] = (1024**3) - user_space["free"]
-    user_space["used_percent"] = user_space["used"] * 100 / (1024**3)
+    # Get user data (free space and profile picture)
+    user_data = get_user_data(["free_space", "profile_pic_path"], session["user_id"], db)
     
     # Redirect user to the expanded email page
-    return render_template("expanded_email.html", active_page=active_page, user_space=user_space, email=email, sender=sender, receiver=receiver, type=type, page=page, attachments=attachments)
+    return render_template("expanded_email.html", active_page=active_page, user_data=user_data, email=email, sender=sender, receiver=receiver, type=type, page=page, attachments=attachments)
 
 
 def get_emails(select, tables, filter='TRUE', tables_filters_clauses=None, tables_filters_values=None, join_table=None, per_page=None, offset=None, db=None):
@@ -200,6 +199,25 @@ def get_pagination(total):
     end = pagination.page * pagination.per_page if pagination.page * pagination.per_page < pagination.total else pagination.total
     
     return pagination, start, end, per_page, offset
+
+
+def get_user_data(tables, user_id, db):
+    user_data = {}
+    
+    if "free_space" in tables:
+        index = tables.index("free_space")
+        
+        # Get user free space
+        user_data["free_space"] = db.execute("SELECT free_space FROM users WHERE id = ?", user_id)[0]["free_space"]
+        user_data["used_space"] = (1024**3) - user_data["free_space"]
+        user_data["used_space_percent"] = user_data["used_space"] * 100 / (1024**3)
+        
+        tables.pop(index)
+    
+    for table in tables:
+        user_data[table] = db.execute(f"SELECT {table} FROM users WHERE id = ?", user_id)[0][table]
+    
+    return user_data
 
 
 def login_required(f):

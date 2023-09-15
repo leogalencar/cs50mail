@@ -14,7 +14,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from wtforms import StringField, SubmitField
 
-from helpers import allowed_file, apology, check_password_chars, delete_email, expandEmail, get_emails, get_pagination, login_required, remove_html
+from helpers import allowed_file, apology, check_password_chars, delete_email, expandEmail, get_emails, get_pagination, get_user_data, login_required, remove_html
 
 # Make ANSI escape sequences on terminal output (Windows)
 if sys.platform.lower() == 'win32':
@@ -94,15 +94,11 @@ def index(email_id=None):
             email["date"] = datetime.strptime(email["date"], "%Y-%m-%d %H:%M:%S").strftime("%b %d")
             email["content"] = remove_html(email["content"])
         
-        # Get user free space
-        user_space = {}
-        
-        user_space["free"] = db.execute("SELECT free_space FROM users WHERE id = ?", session["user_id"])[0]["free_space"]
-        user_space["used"] = (1024**3) - user_space["free"]
-        user_space["used_percent"] = user_space["used"] * 100 / (1024**3)
+        # Get user data (free space and profile picture)
+        user_data = get_user_data(["free_space", "profile_pic_path"], session["user_id"], db)
         
         # Redirect user to index page
-        return render_template("index.html", active_page='inbox', emails=emails, user_space=user_space, pagination=pagination, start=start, end=end)
+        return render_template("index.html", active_page='inbox', emails=emails, user_data=user_data, pagination=pagination, start=start, end=end)
     
     # Expand selected email
     else:
@@ -257,7 +253,7 @@ def delete(email_id=None, type=None, items=None):
 
 @app.route("/download/<path:filename>", methods=["GET"])
 def download(filename):
-    return send_file(filename, as_attachment=True)
+    return send_file(filename, as_attachment=True, download_name=filename[56 + session["user_id"]:])
 
 
 @app.route("/favorites")
@@ -295,15 +291,11 @@ def favorites(email_id=None):
             email["date"] = datetime.strptime(email["date"], "%Y-%m-%d %H:%M:%S").strftime("%b %d")
             email["content"] = remove_html(email["content"])
         
-        # Get user free space
-        user_space = {}
-        
-        user_space["free"] = db.execute("SELECT free_space FROM users WHERE id = ?", session["user_id"])[0]["free_space"]
-        user_space["used"] = (1024**3) - user_space["free"]
-        user_space["used_percent"] = user_space["used"] * 100 / (1024**3)
+        # Get user data (free space and profile picture)
+        user_data = get_user_data(["free_space", "profile_pic_path"], session["user_id"], db)
         
         # Redirect user to trash page
-        return render_template("favorites.html", active_page='favorites', emails=emails, user_space=user_space, pagination=pagination, start=start, end=end)
+        return render_template("favorites.html", active_page='favorites', emails=emails, user_data=user_data, pagination=pagination, start=start, end=end)
     
     # Expand selected email
     else:
@@ -489,15 +481,11 @@ def search(email_info='', email_id=None):
             email["date"] = datetime.strptime(email["date"], "%Y-%m-%d %H:%M:%S").strftime("%b %d")
             email["content"] = remove_html(email["content"])
         
-        # Get user free space
-        user_space = {}
-        
-        user_space["free"] = db.execute("SELECT free_space FROM users WHERE id = ?", session["user_id"])[0]["free_space"]
-        user_space["used"] = (1024**3) - user_space["free"]
-        user_space["used_percent"] = user_space["used"] * 100 / (1024**3)
+        # Get user data (free space and profile picture)
+        user_data = get_user_data(["free_space", "profile_pic_path"], session["user_id"], db)
         
         # Redirect user to search page with the searched info
-        return render_template("search.html", active_page='search/' + email_info, emails=emails, user_space=user_space, keyword=email_info, pagination=pagination, start=start, end=end)
+        return render_template("search.html", active_page='search/' + email_info, emails=emails, user_data=user_data, keyword=email_info, pagination=pagination, start=start, end=end)
     
     # Expand selected email
     else:
@@ -534,9 +522,9 @@ def sendEmail():
             db.execute("INSERT INTO emails_received (email_id, category, favorite) VALUES (?, ?, ?)", email_id, "INBOX", 0)
             
             # Configure upload folder for files
-            if not os.path.exists(THIS_FOLDER / f'files/{session["user_id"]}'):
-                os.makedirs(THIS_FOLDER / f'files/{session["user_id"]}')
-            app.config["UPLOAD_FOLDER"] = THIS_FOLDER / f'files/{session["user_id"]}'
+            if not os.path.exists(THIS_FOLDER / f'static/user_files/{session["user_id"]}'):
+                os.makedirs(THIS_FOLDER / f'static/user_files/{session["user_id"]}')
+            app.config["UPLOAD_FOLDER"] = THIS_FOLDER / f'static/user_files/{session["user_id"]}'
             
             # Handle files
             for file in files:
@@ -568,7 +556,7 @@ def sendEmail():
                     db.execute("UPDATE users SET free_space = (free_space - ?) WHERE id = ?", size, receiver_id)
                     
                     # Redefine file path for saving in the database
-                    path = os.path.join(f'files/{session["user_id"]}', filename)
+                    path = os.path.join(f'static/user_files/{session["user_id"]}', filename)
                     
                     # Save file data on the database
                     db.execute("INSERT INTO files (email_id, name, path, type, size) VALUES (?, ?, ?, ?, ?)", email_id, filename, path, file_type, size)
@@ -613,15 +601,11 @@ def sent(email_id=None):
             email["date"] = datetime.strptime(email["date"], "%Y-%m-%d %H:%M:%S").strftime("%b %d")
             email["content"] = remove_html(email["content"])
 
-        # Get user free space
-        user_space = {}
-        
-        user_space["free"] = db.execute("SELECT free_space FROM users WHERE id = ?", session["user_id"])[0]["free_space"]
-        user_space["used"] = (1024**3) - user_space["free"]
-        user_space["used_percent"] = user_space["used"] * 100 / (1024**3)
+        # Get user data (free space and profile picture)
+        user_data = get_user_data(["free_space", "profile_pic_path"], session["user_id"], db)
         
         # Redirect user to sent emails page
-        return render_template("sent.html", active_page="sent", emails=emails, user_space=user_space, pagination=pagination, start=start, end=end)
+        return render_template("sent.html", active_page="sent", emails=emails, user_data=user_data, pagination=pagination, start=start, end=end)
     
     # Expand selected email
     else:
@@ -635,6 +619,39 @@ def settings():
     
     # User reached route via POST (as submitting a form via POST)
     if request.method == "POST":
+        
+        if file := request.files["inputProfilePicture"]:
+            
+            if file.filename == '' or not allowed_file(file.filename, "image"):
+                redirect("/inbox")
+            
+            # Get old profile picture path
+            old_path = db.execute("SELECT profile_pic_path FROM users WHERE id = ?", session["user_id"])[0]["profile_pic_path"]
+            
+            # Delete old profile picture
+            if os.path.exists(old_path) and old_path != "static/img/profilepic.png":
+                os.remove(old_path)
+            
+            # Configure upload folder for files
+            if not os.path.exists(THIS_FOLDER / f'static/user_files/{session["user_id"]}'):
+                os.makedirs(THIS_FOLDER / f'static/user_files/{session["user_id"]}')
+            app.config["UPLOAD_FOLDER"] = THIS_FOLDER / f'static/user_files/{session["user_id"]}'
+            
+            # Make file name secure
+            filename = secure_filename(str(uuid4()) + '_' + file.filename)
+            
+            # Save file
+            path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(path)
+            
+            # Redefine file path for saving in the database
+            path = os.path.join(f'static/user_files/{session["user_id"]}', filename)
+            
+            # Save file data on the database
+            db.execute("UPDATE users SET profile_pic_path = ? WHERE id = ?", path, session["user_id"])
+            
+            return redirect("/inbox")
+        
         old_password = request.form.get("oldPasswordInput")
         password = request.form.get("passwordInput")
         password_confirmation = request.form.get("passwordConfirmationInput")
@@ -665,14 +682,10 @@ def settings():
     # User reached route via GET (as clicking by link or via redirect)
     else:
         
-        # Get user free space
-        user_space = {}
+        # Get user data (free space and profile picture)
+        user_data = get_user_data(["free_space", "profile_pic_path"], session["user_id"], db)
         
-        user_space["free"] = db.execute("SELECT free_space FROM users WHERE id = ?", session["user_id"])[0]["free_space"]
-        user_space["used"] = (1024**3) - user_space["free"]
-        user_space["used_percent"] = user_space["used"] * 100 / (1024**3)
-        
-        return render_template("settings.html", active_page='settings', user_space=user_space)
+        return render_template("settings.html", active_page='settings', user_data=user_data)
 
 
 @app.route("/star/<email_id>", methods=["POST"])
@@ -826,15 +839,11 @@ def trash(email_id=None):
             email["date"] = datetime.strptime(email["date"], "%Y-%m-%d %H:%M:%S").strftime("%b %d")
             email["content"] = remove_html(email["content"])
         
-        # Get user free space
-        user_space = {}
-        
-        user_space["free"] = db.execute("SELECT free_space FROM users WHERE id = ?", session["user_id"])[0]["free_space"]
-        user_space["used"] = (1024**3) - user_space["free"]
-        user_space["used_percent"] = user_space["used"] * 100 / (1024**3)
+        # Get user data (free space and profile picture)
+        user_data = get_user_data(["free_space", "profile_pic_path"], session["user_id"], db)
         
         # Redirect user to trash page
-        return render_template("trash.html", active_page='trash', emails=emails, user_space=user_space, pagination=pagination, start=start, end=end)
+        return render_template("trash.html", active_page='trash', emails=emails, user_data=user_data, pagination=pagination, start=start, end=end)
     
     # Expand selected email
     else:

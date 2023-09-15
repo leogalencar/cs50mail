@@ -73,7 +73,7 @@
                                 </form> -->
                                 <div class="btn-group">
                                     <button class="btn btn-icon border-0 rounded-5" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <img class="rounded-5" src="/static/img/profilepic.png" alt="Profile Picture" width="24">
+                                        <img class="rounded-5" src="/{{ user_data.profile_pic_path }}" alt="Profile Picture" width="24" height="24">
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li><a class="dropdown-item" href="/settings">Account Settings</a></li>
@@ -121,15 +121,14 @@
                                     <li class="nav-item"><a class="nav-link" href="/login">Log In</a></li>
                                 {% endif %}
                             </ul>
-                            <!-- TODO : Fix progress bar display -->
                             {% if session["user_id"] %}
                                 <div id="div-progress-bar" class="p-2 mt-5">
                                     <img src="/static/svg/cloud.svg" alt="Cloud icon" width="24" height="24">
                                     Free Space Remaining
                                     <div>
-                                        Used {{ '%0.2f' | format(user_space.used / 1024**2 | float) }} MB of 1 GB
+                                        Used {{ '%0.2f' | format(user_data.used_space / 1024**2 | float) }} MB of 1 GB
                                         <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">
-                                            <div class="progress-bar space-progress-bar" data-width="{{ user_space.used_percent }}%"></div>
+                                            <div class="progress-bar space-progress-bar" data-width="{{ user_data.used_space_percent }}%"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -184,9 +183,9 @@
                             <img src="/static/svg/cloud.svg" alt="Cloud icon" width="24" height="24">
                             Free Space Remaining
                             <div>
-                                Used {{ '%0.2f' | format(user_space.used / 1024**2 | float) }} MB of 1 GB
+                                Used {{ '%0.2f' | format(user_data.used_space / 1024**2 | float) }} MB of 1 GB
                                 <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">
-                                    <div class="progress-bar space-progress-bar" data-width="{{ user_space.used_percent }}%"></div>
+                                    <div class="progress-bar space-progress-bar" data-width="{{ user_data.used_space_percent }}%"></div>
                                 </div>
                             </div>
                         </div>

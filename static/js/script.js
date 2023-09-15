@@ -1,15 +1,17 @@
 
 // Expand vertical menu
-document.getElementById("expandVerticalMenu").addEventListener("click", () => {
-    nav = document.getElementById("verticalNav");
-    nav_active = nav.classList.contains("nav-hidden")
-
-    if (verticalMenu) {
-        nav.classList.add("nav-hidden");
-    } else {
-        nav.classList.remove("nav-hidden");
-    }
-});
+if (document.getElementById("expandVerticalMenu")) {
+    document.getElementById("expandVerticalMenu").addEventListener("click", () => {
+        nav = document.getElementById("verticalNav");
+        nav_active = nav.classList.contains("nav-hidden")
+    
+        if (verticalMenu) {
+            nav.classList.add("nav-hidden");
+        } else {
+            nav.classList.remove("nav-hidden");
+        }
+    });
+}
 
 // Redirect user to page
 function redirect(path) {
